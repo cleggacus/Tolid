@@ -12,4 +12,8 @@ impl Renderer {
             previous_buffer: ScreenBuffer::new(),
         }
     }
+
+    pub fn resize(&mut self, width: usize, height: usize) {
+        self.current_buffer.resize(width, height);
+    }
 }
