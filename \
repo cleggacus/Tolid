@@ -160,7 +160,7 @@ impl Renderer {
             .unwrap_or(&self.render_context_global)
     }
 
-    pub fn get(&self, x: usize, y: usize) -> Option<&BufferCell> {
+    pub fn get(&mut self, x: usize, y: usize) -> Option<&BufferCell> {
         let render_context = self.current_render_context();
 
         if x >= render_context.width || y >= render_context.height {
@@ -224,7 +224,7 @@ impl Renderer {
     }
 
     pub fn draw_box_char(&mut self, x: usize, y: usize, box_char: BoxCharLayout) {
-        if let Some(c) = self.get(x, y) {
+        if let Some(c) = self.current_buffer.get(x, y) {
             let new_char = BOX_CHAR_LAYOUT_MAP.overlap_char(*c.content(), box_char);
             self.set(x, y, BufferCell::new(*c.style(), new_char));
         }

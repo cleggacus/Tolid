@@ -2,7 +2,7 @@ use std::{io::stdout, time::Duration};
 
 use crossterm::{event::{KeyCode, KeyEvent}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
-use crate::{component::{Component, Root}, events::{Event, EventManager}, renderer::Renderer};
+use crate::{component::{Bouncer, Component, Root}, events::{Event, EventManager}, renderer::Renderer};
 
 pub struct App {
     component_tree: Box<dyn Component>,
@@ -12,8 +12,12 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
+        let mut component_tree = Box::new(Root::new());
+        let bouncer = Box::new(Bouncer::new());
+        component_tree.set_child(bouncer);
+
         App {
-            component_tree: Box::new(Root::new()),
+            component_tree,
             renderer: Renderer::new(),
             event_manager: EventManager::new(Duration::from_millis(100)),
         }
