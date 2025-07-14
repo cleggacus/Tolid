@@ -180,10 +180,6 @@ impl Renderer {
         }
     }
 
-    pub fn render_renderable<T: Renderable>(&mut self, renderable: &T) {
-        renderable.render(self);
-    }
-
     pub fn render(&mut self, stdout: &mut Stdout) -> Result<(), Box<dyn std::error::Error>> {
         for y in 0..self.height {
             let mut start: Option<(usize, BufferCell)> = None;
@@ -269,8 +265,4 @@ impl Renderer {
             String::new()
         }
     }
-}
-
-pub trait Renderable {
-    fn render(&self, renderer: &mut Renderer);
 }
