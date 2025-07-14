@@ -1,6 +1,6 @@
 use std::{io::stdout, time::Duration};
 
-use crossterm::{event::{KeyCode, KeyEvent}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
+use crossterm::{cursor::{Hide, Show}, event::{KeyCode, KeyEvent}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
 use crate::{component::{Bouncer, Component, Root}, events::{Event, EventManager}, renderer::Renderer};
 
@@ -19,7 +19,7 @@ impl App {
         App {
             component_tree,
             renderer: Renderer::new(),
-            event_manager: EventManager::new(Duration::from_millis(100)),
+            event_manager: EventManager::new(Duration::from_millis(33)),
         }
     }
 
@@ -30,6 +30,7 @@ impl App {
 
         let (width, height) = size()?;
         self.resize(width, height);
+        execute!(stdout, Hide)?;
 
         loop {
             match self.event_manager.next()? {
@@ -39,10 +40,12 @@ impl App {
                 Event::Quit => break,
             }
         
+            self.component_tree.update();
             self.component_tree.render(&mut self.renderer);
             self.renderer.render(&mut stdout)?;
         }
 
+        execute!(stdout, Show)?;
         execute!(stdout, LeaveAlternateScreen)?;
         disable_raw_mode()?;
         Ok(())

@@ -96,6 +96,7 @@ impl BoxCharMap {
 
 const BOX_CHAR_LAYOUT_MAP: BoxCharMap = BoxCharMap::new();
 
+#[derive(Clone, Copy)]
 pub struct RenderContext {
     pub x: usize,
     pub y: usize,
