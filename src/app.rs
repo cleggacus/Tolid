@@ -33,6 +33,8 @@ impl App {
         let (width, height) = size()?;
         self.resize(width, height);
 
+        self.renderer.draw_box(5, 5, 5, 7);
+
         loop {
             match self.event_manager.next()? {
                 Event::Input(key) => self.handle_input(key),
