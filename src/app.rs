@@ -1,8 +1,8 @@
 use std::{io::stdout, time::Duration};
 
-use crossterm::{cursor::MoveTo, event::{KeyCode, KeyEvent}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
+use crossterm::{cursor::MoveTo, event::{KeyCode, KeyEvent}, execute, style::{Color, Stylize}, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
-use crate::{events::{Event, EventManager}, renderer::Renderer, screen_buffer::Cell};
+use crate::{events::{Event, EventManager}, renderer::Renderer};
 
 pub struct App {
     renderer: Renderer,
@@ -10,6 +10,7 @@ pub struct App {
     pos_x: usize,
     pos_y: usize,
     input: bool,
+    invert: bool,
 }
 
 impl App {
@@ -20,6 +21,7 @@ impl App {
             pos_x: 0,
             pos_y: 0,
             input: false,
+            invert: false,
         }
     }
 
@@ -61,7 +63,10 @@ impl App {
                 KeyEvent { code: KeyCode::Char(char), .. } => {
                     let (width, height) = self.renderer.size();
 
-                    self.renderer.set(self.pos_x, self.pos_y, Cell::Char(char));
+                    self.renderer.set(self.pos_x, self.pos_y, char
+                        .with(if self.invert { Color::Black } else { Color::Reset })
+                        .on(if self.invert { Color::White } else { Color::Reset })
+                    );
 
                     if self.pos_x <= width-1 {
                         self.pos_x += 1;
@@ -106,6 +111,9 @@ impl App {
                 }
                 KeyEvent { code: KeyCode::Char('i'), .. } => {
                     self.input = true;
+                } 
+                KeyEvent { code: KeyCode::Char('I'), .. } => {
+                    self.invert = !self.invert;
                 } 
                 _ => {}
             }
