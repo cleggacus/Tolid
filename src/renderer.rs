@@ -1,6 +1,6 @@
 use std::{io::{Stdout, Write}, ops::Range, mem};
 
-use crossterm::{cursor::MoveTo, queue, style::{Attribute, Attributes, Color, ContentStyle, Print, PrintStyledContent, SetAttribute, SetAttributes, SetBackgroundColor, SetForegroundColor, SetUnderlineColor, StyledContent, Stylize}, QueueableCommand};
+use crossterm::{cursor::MoveTo, style::{Attributes, Color, ContentStyle, Print, SetAttributes, SetBackgroundColor, SetForegroundColor, SetUnderlineColor}, QueueableCommand};
 
 use crate::screen_buffer::{BufferCell, ScreenBuffer};
 

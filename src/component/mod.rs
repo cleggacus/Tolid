@@ -86,8 +86,12 @@ impl Component for Bouncer {}
 impl Updatable for Bouncer {
     fn update(&mut self) {
         if let Some(render_context) = &self.render_context {
-            if self.x+self.width >= render_context.width - 1 {
+            if self.x+self.width == render_context.width - 2 && self.vx > 0 {
+                self.vx = 1;
+            } else if self.x+self.width >= render_context.width - 1 {
                 self.vx = -2;
+            } else if self.x == 1 && self.vx < 0 {
+                self.vx = -1;
             } else if self.x == 0 {
                 self.vx = 2;
             }
@@ -108,14 +112,6 @@ impl Updatable for Bouncer {
                 self.x += self.vx as usize;
             } else if self.vx < 0 {
                 self.x -= (-self.vx) as usize;
-            }
-
-            if self.x+self.width > render_context.width - 1 {
-               self.x = render_context.width - 1 - self.width;
-            }
-
-            if self.y+self.height > render_context.height - 1 {
-               self.y = render_context.height - 1 - self.height;
             }
         }
     }
