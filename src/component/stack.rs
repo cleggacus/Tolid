@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{component::Component, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent, Rect}, renderer::Renderer};
 
 pub enum Direction {
     Row,
@@ -18,6 +18,7 @@ pub struct StackChild {
 }
 
 pub struct Stack {
+    bounds: Rect,
     border: bool,
     direction: Direction,
     children: Vec<StackChild>
@@ -111,7 +112,7 @@ impl Stack {
         widths
     }
 
-    fn render_children(&self, renderer: &mut Renderer) {
+    fn render_children(&mut self, renderer: &mut Renderer) {
         let widths = self.calc_render_widths(renderer);
 
         if widths.len() != self.children.len() {
@@ -140,8 +141,15 @@ impl Stack {
 }
 
 impl Component for Stack {
-    fn render(&self, renderer: &mut Renderer) {
+    fn render(&mut self, renderer: &mut Renderer) {
         let render_context = renderer.current_render_context();
+
+        self.bounds = Rect {
+            x: render_context.x,
+            y: render_context.y,
+            width: render_context.width,
+            height: render_context.height,
+        };
 
         let width = render_context.width;
         let height = render_context.height;
@@ -165,10 +173,17 @@ impl Component for Stack {
             renderer.pop_render_context();
         }
     }
+
+    fn propagate_event(&mut self, event: &ComponentEvent) {
+        for child in &mut self.children {
+            child.component.propagate_event(event);
+        }
+    }
 }
 
 pub fn stack() -> Stack {
     Stack {
+        bounds: Rect::default(),
         border: false,
         direction: Direction::Row,
         children: vec![]

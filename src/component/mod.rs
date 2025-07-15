@@ -1,14 +1,34 @@
 pub mod stack;
 pub mod text;
 
-use std::cmp::Ordering;
-
-use crossterm::style::Stylize;
-
 use crate::{renderer::Renderer};
 
+pub struct Rect {
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+    pub height: usize,
+}
+
+impl Default for Rect {
+    fn default() -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        }
+    }
+}
+
 pub trait Component {
-    fn render(&self, renderer: &mut Renderer);
+    fn propagate_event(&mut self, event: &ComponentEvent);
+    fn render(&mut self, renderer: &mut Renderer);
+}
+
+#[derive(Debug, Clone)]
+pub enum ComponentEvent {
+    OnClick(usize, usize),
 }
 
 // pub trait Renderable {

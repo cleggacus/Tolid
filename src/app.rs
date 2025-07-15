@@ -2,7 +2,7 @@ use std::{io::{stdout, Stdout}, time::Duration};
 
 use crossterm::{cursor::{Hide, Show}, event::{DisableMouseCapture, EnableMouseCapture, KeyCode, KeyEvent, MouseEvent, MouseEventKind}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
-use crate::{component::Component, events::{Event, EventManager}, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent}, events::{Event, EventManager}, renderer::Renderer};
 
 pub struct App {
     root: Box<dyn Component>,
@@ -38,6 +38,7 @@ impl App {
                 Event::Mouse(mouse) => self.handle_mouse(mouse),
                 Event::Tick => {},
                 Event::Resize(w, h) => self.resize(w, h),
+                Event::Component(component_event) => self.root.propagate_event(&component_event),
                 Event::Quit => break,
             }
 
@@ -67,8 +68,10 @@ impl App {
 
     fn handle_mouse(&mut self, mouse_event: MouseEvent) {
         match mouse_event {
-            MouseEvent { kind: MouseEventKind::Down(_), .. } => {
-                self.event_manager.send(Event::Quit);
+            MouseEvent { kind: MouseEventKind::Down(_), row, column, .. } => {
+                self.event_manager.send(Event::Component(
+                    ComponentEvent::OnClick(column as usize, row as usize)
+                ));
             },
             _ => {}
         }

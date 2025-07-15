@@ -18,7 +18,11 @@ fn t1() -> impl Component {
         )
         .add_child(
             StackWidth::Exact(1),
-            text().value("Yasss".into())
+            text()
+                .value("Yasss".into())
+                .on_click(|s| { 
+                    s.set_value("Queeen".into()); 
+                })
         )
         .add_child(
             StackWidth::Exact(1),

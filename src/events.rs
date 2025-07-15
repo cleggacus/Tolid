@@ -3,12 +3,15 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use crate::component::ComponentEvent;
+
 #[derive(Debug, Clone)]
 pub enum Event {
     Key(KeyEvent),
     Mouse(MouseEvent),
     Tick,
     Resize(u16, u16),
+    Component(ComponentEvent),
     Quit,
 }
 
