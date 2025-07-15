@@ -1,4 +1,4 @@
-use crate::component::{stack, text, Component, Direction, StackWidth};
+use crate::component::{stack::{stack, Direction, StackWidth}, text::text, Component};
 
 mod screen_buffer;
 mod app;
@@ -9,18 +9,52 @@ mod component;
 fn t1() -> impl Component {
     stack()
         .border(true)
+        .direction(Direction::Row)
         .add_child(
-            StackWidth::Flex(1),
+            StackWidth::Flex(2),
+            stack()
+                .border(true)
+                .direction(Direction::Row)
+        )
+        .add_child(
+            StackWidth::Exact(1),
             text().value("Yasss".into())
+        )
+        .add_child(
+            StackWidth::Exact(1),
+            text().value("Queeeen!!!".into())
+        )
+        .add_child(
+            StackWidth::Flex(3),
+            stack()
+                .border(true)
+                .direction(Direction::Row)
         )
 }
 
 fn t2() -> impl Component {
     stack()
-        .border(true)
+        .border(false)
+        .direction(Direction::Row)
         .add_child(
-            StackWidth::Flex(1),
-            text().value("Queeen".into())
+            StackWidth::Flex(2),
+            stack()
+                .border(true)
+                .direction(Direction::Row)
+        )
+        .add_child(
+            StackWidth::Exact(1),
+            text().value("Ayyyyy".into())
+        )
+        .add_child(
+            StackWidth::Exact(1),
+            text().value("Yooooo".into())
+        )
+        .add_child(
+            StackWidth::Flex(2),
+            stack()
+                .border(true)
+                .direction(Direction::Row)
         )
 }
 

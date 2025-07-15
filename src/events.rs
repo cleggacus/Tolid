@@ -1,11 +1,12 @@
-use crossterm::event::{self, Event as CtEvent, KeyEvent};
+use crossterm::event::{self, Event as CtEvent, KeyEvent, MouseEvent, MouseEventKind};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone)]
 pub enum Event {
-    Input(KeyEvent),
+    Key(KeyEvent),
+    Mouse(MouseEvent),
     Tick,
     Resize(u16, u16),
     Quit,
@@ -32,8 +33,9 @@ impl EventManager {
 
                 if event::poll(timeout).unwrap() {
                     match event::read().unwrap() {
-                        CtEvent::Key(key) => tx_clone.send(Event::Input(key)).unwrap(),
+                        CtEvent::Key(key) => tx_clone.send(Event::Key(key)).unwrap(),
                         CtEvent::Resize(w, h) => tx_clone.send(Event::Resize(w, h)).unwrap(),
+                        CtEvent::Mouse(mouse) => tx_clone.send(Event::Mouse(mouse)).unwrap(),
                         _ => {}
                     }
                 }
