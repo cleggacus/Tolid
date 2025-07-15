@@ -1,4 +1,4 @@
-use crossterm::event::{self, Event as CtEvent, KeyEvent, MouseEvent, MouseEventKind};
+use crossterm::event::{self, Event as CtEvent, KeyEvent, MouseEvent};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use std::time::{Duration, Instant};
