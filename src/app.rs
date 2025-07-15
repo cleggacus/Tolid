@@ -1,52 +1,57 @@
-use std::{io::stdout, time::Duration};
+use std::{io::{stdout, Stdout}, time::Duration};
 
 use crossterm::{cursor::{Hide, Show}, event::{KeyCode, KeyEvent}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
-use crate::{component::{Bouncer, Component, Root}, events::{Event, EventManager}, renderer::Renderer};
+use crate::{component::{Component, Renderable, Root, Updatable}, events::{Event, EventManager}, renderer::Renderer};
 
-pub struct App {
-    component_tree: Box<dyn Component>,
+pub struct App<F, C>
+where
+    F: Fn() -> C,
+    C: Renderable,
+{
+    root_fn: F,
     renderer: Renderer,
     event_manager: EventManager,
+    stdout: Stdout,
 }
 
-impl App {
-    pub fn new() -> Self {
-        let mut component_tree = Box::new(Root::new());
-        let bouncer = Box::new(Bouncer::new());
-        component_tree.set_child(bouncer);
-
+impl<F, C> App<F, C>
+where
+    F: Fn() -> C,
+    C: Component,
+{
+    pub fn new(root_fn: F) -> Self {
         App {
-            component_tree,
+            root_fn,
             renderer: Renderer::new(),
             event_manager: EventManager::new(Duration::from_millis(33)),
+            stdout: stdout()
         }
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         enable_raw_mode()?;
-        let mut stdout = stdout();
-        execute!(stdout, EnterAlternateScreen)?;
+        execute!(self.stdout, EnterAlternateScreen)?;
 
         let (width, height) = size()?;
         self.resize(width, height);
-        execute!(stdout, Hide)?;
+        execute!(self.stdout, Hide)?;
 
         loop {
+            let mut root = (self.root_fn)();
+
             match self.event_manager.next()? {
                 Event::Input(key) => self.handle_input(key),
-                Event::Tick => self.update(),
+                Event::Tick => self.update(&mut root),
                 Event::Resize(w, h) => self.resize(w, h),
                 Event::Quit => break,
             }
-        
-            self.component_tree.update();
-            self.component_tree.render(&mut self.renderer);
-            self.renderer.render(&mut stdout)?;
+
+            self.render(&mut root)?;
         }
 
-        execute!(stdout, Show)?;
-        execute!(stdout, LeaveAlternateScreen)?;
+        execute!(self.stdout, Show)?;
+        execute!(self.stdout, LeaveAlternateScreen)?;
         disable_raw_mode()?;
         Ok(())
     }
@@ -64,7 +69,14 @@ impl App {
         }
     }
 
-    fn update(&mut self) {
+    fn render(&mut self, root: &mut C) -> Result<(), Box<dyn std::error::Error>> {
+        root.render(&mut self.renderer);
+        self.renderer.render(&mut self.stdout)?;
+        Ok(())
+    }
+
+    fn update(&mut self, root: &mut C) {
+        root.update();
     }
 }
 
