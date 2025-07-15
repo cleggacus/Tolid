@@ -2,27 +2,19 @@ use std::{io::{stdout, Stdout}, time::Duration};
 
 use crossterm::{cursor::{Hide, Show}, event::{KeyCode, KeyEvent}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
-use crate::{component::{Component, Renderable, Root, Updatable}, events::{Event, EventManager}, renderer::Renderer};
+use crate::{component::Component, events::{Event, EventManager}, renderer::Renderer};
 
-pub struct App<F, C>
-where
-    F: Fn() -> C,
-    C: Renderable,
-{
-    root_fn: F,
+pub struct App {
+    root: Box<dyn Component>,
     renderer: Renderer,
     event_manager: EventManager,
     stdout: Stdout,
 }
 
-impl<F, C> App<F, C>
-where
-    F: Fn() -> C,
-    C: Component,
-{
-    pub fn new(root_fn: F) -> Self {
+impl App {
+    pub fn new<T: Component + 'static>(root: T) -> Self {
         App {
-            root_fn,
+            root: Box::new(root),
             renderer: Renderer::new(),
             event_manager: EventManager::new(Duration::from_millis(33)),
             stdout: stdout()
@@ -38,16 +30,17 @@ where
         execute!(self.stdout, Hide)?;
 
         loop {
-            let mut root = (self.root_fn)();
+            // let mut root = (self.root_fn)();
 
             match self.event_manager.next()? {
                 Event::Input(key) => self.handle_input(key),
-                Event::Tick => self.update(&mut root),
+                Event::Tick => {},
                 Event::Resize(w, h) => self.resize(w, h),
                 Event::Quit => break,
             }
 
-            self.render(&mut root)?;
+            self.root.render(&mut self.renderer);
+            self.renderer.render(&mut self.stdout);
         }
 
         execute!(self.stdout, Show)?;
@@ -69,14 +62,10 @@ where
         }
     }
 
-    fn render(&mut self, root: &mut C) -> Result<(), Box<dyn std::error::Error>> {
-        root.render(&mut self.renderer);
-        self.renderer.render(&mut self.stdout)?;
-        Ok(())
-    }
-
-    fn update(&mut self, root: &mut C) {
-        root.update();
-    }
+    // fn render(&mut self, root: &mut dyn Component) -> Result<(), Box<dyn std::error::Error>> {
+    //     root.render(&mut self.renderer);
+    //     self.renderer.render(&mut self.stdout)?;
+    //     Ok(())
+    // }
 }
 

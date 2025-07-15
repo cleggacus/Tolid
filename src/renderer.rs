@@ -104,6 +104,42 @@ pub struct RenderContext {
     pub height: usize,
 }
 
+impl RenderContext {
+    pub fn intersect(&self, other: &RenderContext) -> Option<RenderContext> {
+        let x1 = self.x.max(other.x);
+        let y1 = self.y.max(other.y);
+
+        let x2 = (self.x + self.width).min(other.x + other.width);
+        let y2 = (self.y + self.height).min(other.y + other.height);
+
+        if x2 > x1 && y2 > y1 {
+            Some(RenderContext {
+                x: x1,
+                y: y1,
+                width: x2 - x1,
+                height: y2 - y1,
+            })
+        } else {
+            None
+        }
+    }
+
+    pub fn intersect_or_clamp(&self, other: &RenderContext) -> RenderContext {
+        self.intersect(other)
+            .unwrap_or({
+                let clamped_x = other.x.clamp(self.x, self.x + self.width);
+                let clamped_y = other.y.clamp(self.y, self.y + self.height);
+
+                RenderContext {
+                    x: clamped_x,
+                    y: clamped_y,
+                    width: 0,
+                    height: 0,
+                }
+            })
+    }
+}
+
 pub struct Renderer {
     current_buffer: ScreenBuffer,
     previous_buffer: ScreenBuffer,
@@ -152,8 +188,23 @@ impl Renderer {
         self.render_context_stack.pop();
     }
 
-    pub fn push_render_context(&mut self, x: usize, y: usize, width: usize, height: usize) {
-        self.render_context_stack.push(RenderContext { x, y, width, height });
+    pub fn push_relative_render_context(&mut self, x: usize, y: usize, width: usize, height: usize) {
+        let render_context = self.current_render_context();
+
+        self.push_absolute_render_context(
+            render_context.x + x, 
+            render_context.y + y, 
+            width, 
+            height
+        );
+    }
+
+    pub fn push_absolute_render_context(&mut self, x: usize, y: usize, width: usize, height: usize) {
+        let render_context = self.current_render_context();
+
+        self.render_context_stack.push(
+            RenderContext { x, y, width, height }
+                .intersect_or_clamp(render_context));
     }
 
     pub fn current_render_context(&self) -> &RenderContext {
