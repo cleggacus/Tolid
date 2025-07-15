@@ -1,12 +1,8 @@
-use crate::component::{stack::{stack, Direction, StackWidth}, text::text, Component};
-
-mod screen_buffer;
-mod app;
-mod renderer;
-mod events;
-mod component;
+use tolid::{app::App, component::{stack::{stack, Direction, StackWidth}, text::text, Component}};
 
 fn t1() -> impl Component {
+    let mut toggle = false;
+
     stack()
         .border(true)
         .direction(Direction::Row)
@@ -19,9 +15,17 @@ fn t1() -> impl Component {
         .add_child(
             StackWidth::Exact(1),
             text()
-                .value("Yasss".into())
-                .on_click(|s| { 
-                    s.set_value("Queeen".into()); 
+                .value("Click Me!!!".into())
+                .on_click(move |this| { 
+                    toggle = !toggle;
+
+                    let text = if toggle {
+                        "Yaasssss"
+                    } else {
+                        "Slaayyyy"
+                    };
+
+                    this.set_value(text.into()); 
                 })
         )
         .add_child(
@@ -77,45 +81,7 @@ fn root() -> impl Component {
 }
 
 fn main() {
-    app::App::new(root())
+    App::new(root())
         .run()
         .unwrap();
 }
-
-// Goal!!!
-// 
-// fn TextInputComponent(ctx: Scope, set_text: WriteSignal<String>, text: ReadSignal<String>) -> Node {
-//     input()
-//         .placeholder("Type something...")
-//         .value(move || text.get())
-//         .on_change(move |new_val| {
-//             set_text.set(new_val);
-//         })
-//         .build()
-// }
-// 
-// fn DisplayComponent(ctx: Scope, text: ReadSignal<String>) -> Node {
-//     create_effect(cx, move || {
-//         notify!("Text changed to: {}", text.get());
-//     });
-// 
-//     text()
-//         .child(move || text.get())
-//         .build()
-// }
-// 
-// fn App(ctx: Scope) -> impl Component {
-//     let (text, set_text) = create_signal(ctx, String::new());
-// 
-//     vstack()
-//         .child(text().child("Sandbox!!!"))
-//         .child(TextInputComponent(cx, set_text, text))
-//         .child(DisplayComponent(cx, text))
-//         .build()
-// }
-// 
-// fn main() {
-//     app::App::new(App)
-//         .run()
-//         .unwrap();
-// }

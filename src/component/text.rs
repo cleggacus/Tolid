@@ -5,7 +5,7 @@ use crate::{component::{Component, ComponentEvent, Rect}, renderer::Renderer};
 pub struct Text {
     bounds: Rect,
     value: String,
-    on_click: Option<Box<dyn Fn(&mut Text)>>,
+    on_click: Option<Box<dyn FnMut(&mut Text)>>,
 }
 
 impl Text {
@@ -20,7 +20,7 @@ impl Text {
 
     pub fn on_click<F>(mut self, on_click: F) -> Self 
     where
-        F: Fn(&mut Text) + 'static,
+        F: FnMut(&mut Text) + 'static,
     {
         self.on_click = Some(Box::new(on_click));
         self
@@ -53,7 +53,7 @@ impl Component for Text {
                     return;
                 }
 
-                if let Some(on_click) = self.on_click.take() {
+                if let Some(mut on_click) = self.on_click.take() {
                     on_click(self);
                     self.on_click = Some(on_click);
                 }
