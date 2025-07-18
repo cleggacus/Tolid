@@ -45,7 +45,7 @@ impl StackComponent {
         let mut flex_total: usize = 0;
         let mut flex_count: usize = 0;
 
-        let mut exact_count: usize = 0;
+        let mut exact_total: usize = 0;
 
         for i in 0..self.props.children.len() {
             let width = self.props.widths.get(i).unwrap_or(&StackWidth::Flex(1));
@@ -55,8 +55,8 @@ impl StackComponent {
                     flex_total += val;
                     flex_count += 1;
                 },
-                StackWidth::Exact(_) => {
-                    exact_count += 1;
+                StackWidth::Exact(val) => {
+                    exact_total += val;
                 },
             }
         }
@@ -68,7 +68,7 @@ impl StackComponent {
             Direction::Column => render_context.width,
         };
 
-        let total_flex_width = total_potential_width - exact_count;
+        let total_flex_width = total_potential_width - exact_total;
 
         let mut widths = Vec::<usize>::with_capacity(self.props.children.len());
         let mut flex_remainders = Vec::<(f32, usize)>::with_capacity(flex_count);

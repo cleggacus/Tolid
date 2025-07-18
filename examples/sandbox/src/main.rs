@@ -28,7 +28,7 @@ fn Root() -> impl Component {
     let (counter, set_counter) = use_state::<i64>(0);
 
     ui! {
-        <Stack border={true} widths={vec![StackWidth::Flex(1), StackWidth::Flex(1)]} >
+        <Stack direction={Direction::Row} widths={vec![StackWidth::Exact(1), StackWidth::Exact(3)]} >
             <DisplayCounter counter={counter.clone()} label={"Counter".into()} />
             <Incrementer set_counter={set_counter.clone()} />
         </Stack>
