@@ -128,7 +128,7 @@ impl Element {
                 },
                 AttributeValue::Expr(expr) => {
                     // Only auto-wrap if component is Text and field is on_click
-                    if self.name == "Text" && key == "on_click" {
+                    if (self.name == "Stack" || self.name == "Text") && key == "on_click" {
                         quote! { on_click: Some(Box::new(#expr)) }
                     } else if self.name == "Text" && key == "value" {
                         match expr {

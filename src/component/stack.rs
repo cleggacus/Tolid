@@ -33,6 +33,7 @@ pub struct StackProps {
     pub direction: Direction,
     pub children: Vec<Box<dyn Component>>,
     pub widths: Vec<StackWidth>,
+    pub on_click: Option<Box<dyn FnMut(&mut StackComponent)>>,
 }
 
 pub struct StackComponent {
@@ -176,6 +177,22 @@ impl Component for StackComponent {
     }
 
     fn propagate_event(&mut self, event: &ComponentEvent) {
+        match event {
+            ComponentEvent::OnClick(x, y) => {
+                if 
+                    *x < self.bounds.x || *x >= self.bounds.x + self.bounds.width ||
+                    *y < self.bounds.y || *y >= self.bounds.y + self.bounds.height 
+                {
+                    return;
+                }
+
+                if let Some(mut on_click) = self.props.on_click.take() {
+                    on_click(self);
+                    self.props.on_click = Some(on_click);
+                }
+            }
+        }
+
         for child in &mut self.props.children {
             child.propagate_event(event);
         }
