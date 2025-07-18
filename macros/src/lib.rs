@@ -119,8 +119,30 @@ impl Element {
         let mut fields: Vec<proc_macro2::TokenStream> = self.attrs.iter().map(|attr| {
             let key = &attr.name;
             match &attr.value {
-                AttributeValue::Literal(lit) => quote! { #key: #lit },
-                AttributeValue::Expr(expr) => quote! { #key: (#expr) },
+                AttributeValue::Literal(lit) => {
+                    if self.name == "Text" && key == "value" {
+                        quote! { value: tolid::component::ComponentValue::Static(#lit) }
+                    } else {
+                        quote! { #key: #lit }
+                    }
+                },
+                AttributeValue::Expr(expr) => {
+                    // Only auto-wrap if component is Text and field is on_click
+                    if self.name == "Text" && key == "on_click" {
+                        quote! { on_click: Some(Box::new(#expr)) }
+                    } else if self.name == "Text" && key == "value" {
+                        match expr {
+                            syn::Expr::Closure(_) => {
+                                quote! { value: tolid::component::ComponentValue::Dynamic(Box::new(#expr)) }
+                            }
+                            _ => {
+                                quote! { value: tolid::component::ComponentValue::Static(#expr) }
+                            }
+                        }
+                    } else {
+                        quote! { #key: (#expr) }
+                    }
+                }
             }
         }).collect();
 
