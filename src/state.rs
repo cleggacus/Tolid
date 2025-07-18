@@ -6,6 +6,12 @@ pub struct GetState<T> {
     inner: Rc<RefCell<T>>,
 }
 
+impl<T: Default> Default for GetState<T> {
+    fn default() -> Self {
+        GetState { inner: Default::default() }
+    }
+}
+
 impl<T: Clone> GetState<T> {
     pub fn get(&self) -> T {
         self.inner.borrow().clone()
@@ -15,6 +21,12 @@ impl<T: Clone> GetState<T> {
 #[derive(Clone)]
 pub struct SetState<T> {
     inner: Rc<RefCell<T>>,
+}
+
+impl<T: Default> Default for SetState<T> {
+    fn default() -> Self {
+        SetState { inner: Default::default() }
+    }
 }
 
 impl<T> SetState<T> {

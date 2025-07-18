@@ -36,6 +36,12 @@ pub enum ComponentValue<T> {
     Dynamic(Box<dyn Fn() -> T>),
 }
 
+impl<T: Default> Default for ComponentValue<T> {
+    fn default() -> Self {
+        Self::Static(Default::default())
+    }
+}
+
 pub trait IntoComponentValue<T> {
     fn into_component_value(self) -> ComponentValue<T>;
 }

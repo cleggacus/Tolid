@@ -2,32 +2,13 @@ use crossterm::style::Stylize;
 
 use crate::{component::{Component, ComponentEvent, ComponentValue, IntoComponentValue, Rect}, renderer::Renderer};
 
-pub struct Text {
+pub struct TextComponent {
     bounds: Rect,
     value: ComponentValue<String>,
-    on_click: Option<Box<dyn FnMut(&mut Text)>>,
+    on_click: Option<Box<dyn FnMut(&mut TextComponent)>>,
 }
 
-impl Text {
-    pub fn value<T: IntoComponentValue<String>>(mut self, value: T) -> Self {
-        self.value = value.into_component_value();
-        self
-    }
-
-    pub fn set_value<T: IntoComponentValue<String>>(&mut self, value: T) {
-        self.value = value.into_component_value();
-    }
-
-    pub fn on_click<F>(mut self, on_click: F) -> Self 
-    where
-        F: FnMut(&mut Text) + 'static,
-    {
-        self.on_click = Some(Box::new(on_click));
-        self
-    }
-}
-
-impl Component for Text {
+impl Component for TextComponent {
     fn render(&mut self, renderer: &mut Renderer) {
         let render_context = renderer.current_render_context();
 
@@ -67,10 +48,16 @@ impl Component for Text {
     }
 }
 
-pub fn text() -> Text {
-    Text {
+#[derive(Default)]
+pub struct TextProps {
+    pub value: ComponentValue<String>,
+    pub on_click: Option<Box<dyn FnMut(&mut TextComponent)>>,
+}
+
+pub fn Text(props: TextProps) -> TextComponent {
+    TextComponent {
         bounds: Rect::default(),
-        value: ComponentValue::Static("".into()),
-        on_click: None,
+        value: props.value,
+        on_click: props.on_click
     }
 }

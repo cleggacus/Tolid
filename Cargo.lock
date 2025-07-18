@@ -263,6 +263,16 @@ name = "tolid"
 version = "0.1.0"
 dependencies = [
  "crossterm",
+ "tolid_macros",
+]
+
+[[package]]
+name = "tolid_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
