@@ -1,4 +1,4 @@
-use tolid::{app::App, component::{stack::{Direction, Stack, StackProps, StackWidth}, text::{Text, TextProps}, Component, ComponentValue}, marcos::{component, ui}, state::{use_state, GetState, SetState}};
+use tolid::prelude::*;
 
 #[component]
 fn DisplayCounter(counter: GetState<i64>, label: String) -> impl Component {
