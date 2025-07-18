@@ -31,6 +31,52 @@ pub enum ComponentEvent {
     OnClick(usize, usize),
 }
 
+pub enum ComponentValue<T> {
+    Static(T),
+    Dynamic(Box<dyn Fn() -> T>),
+}
+
+pub trait IntoComponentValue<T> {
+    fn into_component_value(self) -> ComponentValue<T>;
+}
+
+
+macro_rules! impl_into_component_value_fn {
+    ($($ty:ty),* $(,)?) => {
+        $(
+            impl<F> IntoComponentValue<$ty> for F
+            where
+                F: Fn() -> $ty + 'static,
+            {
+                fn into_component_value(self) -> ComponentValue<$ty> {
+                    ComponentValue::Dynamic(Box::new(self))
+                }
+            }
+
+            impl IntoComponentValue<$ty> for $ty {
+                fn into_component_value(self) -> ComponentValue<$ty> {
+                    ComponentValue::Static(self)
+                }
+            }
+        )*
+    };
+}
+
+impl_into_component_value_fn!(
+    String,
+    usize, u8, u16, u32, u64, u128,
+    isize, i8, i16, i32, i64, i128,
+    bool,
+    f32, f64,
+    char,
+);
+
+impl IntoComponentValue<String> for &str {
+    fn into_component_value(self) -> ComponentValue<String> {
+        ComponentValue::Static(self.into())
+    }
+}
+
 // pub trait Renderable {
 //     fn render(&mut self, renderer: &mut Renderer);
 // }

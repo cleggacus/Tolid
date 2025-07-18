@@ -1,8 +1,6 @@
-use tolid::{app::App, component::{stack::{stack, Direction, StackWidth}, text::text, Component}};
+use tolid::{app::App, component::{stack::{stack, Direction, StackWidth}, text::text, Component}, state::{use_state, GetState, SetState}};
 
-fn t1() -> impl Component {
-    let mut toggle = false;
-
+fn t1(counter: GetState<i64>) -> impl Component {
     stack()
         .border(true)
         .direction(Direction::Row)
@@ -14,23 +12,7 @@ fn t1() -> impl Component {
         )
         .add_child(
             StackWidth::Exact(1),
-            text()
-                .value("Click Me!!!".into())
-                .on_click(move |this| { 
-                    toggle = !toggle;
-
-                    let text = if toggle {
-                        "Yaasssss"
-                    } else {
-                        "Slaayyyy"
-                    };
-
-                    this.set_value(text.into()); 
-                })
-        )
-        .add_child(
-            StackWidth::Exact(1),
-            text().value("Queeeen!!!".into())
+            text().value(move || format!("Counter: {}", counter.get()))
         )
         .add_child(
             StackWidth::Flex(3),
@@ -40,7 +22,7 @@ fn t1() -> impl Component {
         )
 }
 
-fn t2() -> impl Component {
+fn t2(set_counter: SetState<i64>) -> impl Component {
     stack()
         .border(false)
         .direction(Direction::Row)
@@ -52,11 +34,33 @@ fn t2() -> impl Component {
         )
         .add_child(
             StackWidth::Exact(1),
-            text().value("Ayyyyy".into())
+            text()
+                .value("Increment")
+                .on_click(move |_| set_counter.update(|counter| counter+1))
+        )
+        .add_child(
+            StackWidth::Flex(2),
+            stack()
+                .border(true)
+                .direction(Direction::Row)
+        )
+}
+
+fn t3(set_counter: SetState<i64>) -> impl Component {
+    stack()
+        .border(false)
+        .direction(Direction::Row)
+        .add_child(
+            StackWidth::Flex(3),
+            stack()
+                .border(true)
+                .direction(Direction::Row)
         )
         .add_child(
             StackWidth::Exact(1),
-            text().value("Yooooo".into())
+            text()
+                .value("Decrement")
+                .on_click(move |_| set_counter.update(|counter| counter-1))
         )
         .add_child(
             StackWidth::Flex(2),
@@ -67,16 +71,22 @@ fn t2() -> impl Component {
 }
 
 fn root() -> impl Component {
+    let (counter, set_counter) = use_state::<i64>(0);
+
     stack()
         .border(true)
         .direction(Direction::Column)
         .add_child(
             StackWidth::Flex(1),
-            t1()
+            t1(counter.clone())
         )
         .add_child(
             StackWidth::Flex(2),
-            t2()
+            t2(set_counter.clone())
+        )
+        .add_child(
+            StackWidth::Flex(1),
+            t3(set_counter)
         )
 }
 

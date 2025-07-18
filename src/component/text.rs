@@ -1,21 +1,21 @@
 use crossterm::style::Stylize;
 
-use crate::{component::{Component, ComponentEvent, Rect}, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent, ComponentValue, IntoComponentValue, Rect}, renderer::Renderer};
 
 pub struct Text {
     bounds: Rect,
-    value: String,
+    value: ComponentValue<String>,
     on_click: Option<Box<dyn FnMut(&mut Text)>>,
 }
 
 impl Text {
-    pub fn value(mut self, value: String) -> Self {
-        self.value = value;
+    pub fn value<T: IntoComponentValue<String>>(mut self, value: T) -> Self {
+        self.value = value.into_component_value();
         self
     }
 
-    pub fn set_value(&mut self, value: String) {
-        self.value = value;
+    pub fn set_value<T: IntoComponentValue<String>>(&mut self, value: T) {
+        self.value = value.into_component_value();
     }
 
     pub fn on_click<F>(mut self, on_click: F) -> Self 
@@ -38,7 +38,12 @@ impl Component for Text {
             height: render_context.height,
         };
 
-        for (i, c) in self.value.chars().enumerate() {
+        let value = match &self.value {
+            ComponentValue::Static(value) => value,
+            ComponentValue::Dynamic(value_fn) => &value_fn(),
+        };
+
+        for (i, c) in value.chars().enumerate() {
             renderer.set(i, 0, c.stylize());
         }
     }
@@ -65,7 +70,7 @@ impl Component for Text {
 pub fn text() -> Text {
     Text {
         bounds: Rect::default(),
-        value: "".into(),
+        value: ComponentValue::Static("".into()),
         on_click: None,
     }
 }
