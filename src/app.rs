@@ -6,11 +6,11 @@ use crate::{component::{Component, ComponentEvent}, events::{Event, EventManager
 
 pub fn run_app<F, P, C>(f: F)
 where
-    F: Fn(P) -> C + 'static,
+    F: Fn(StateContext, P) -> C + 'static,
     P: Default,
     C: Component + 'static,
 {
-    let root_fn = Box::new(move || Box::new(f(Default::default())) as Box<dyn Component>);
+    let root_fn = Box::new(move |ctx| Box::new(f(ctx, Default::default())) as Box<dyn Component>);
 
     App::new(root_fn)
         .run()
@@ -19,20 +19,20 @@ where
 
 
 struct App {
-    root_fn: Box<dyn Fn() -> Box<dyn Component + 'static>>,
+    root_fn: Box<dyn Fn(StateContext) -> Box<dyn Component + 'static>>,
     renderer: Renderer,
     event_manager: EventManager,
-    _state_context: StateContext,
+    state_context: StateContext,
     stdout: Stdout,
 }
 
 impl App {
-    pub fn new(root_fn: Box<dyn Fn() -> Box<dyn Component + 'static>>) -> Self {
+    pub fn new(root_fn: Box<dyn Fn(StateContext) -> Box<dyn Component + 'static>>) -> Self {
         App {
             root_fn,
             renderer: Renderer::new(),
             event_manager: EventManager::new(Duration::from_millis(33)),
-            _state_context: StateContext::new(),
+            state_context: StateContext::new(),
             stdout: stdout()
         }
     }
@@ -46,7 +46,7 @@ impl App {
         self.resize(width, height);
         execute!(self.stdout, Hide)?;
 
-        let mut root = (self.root_fn)();
+        let mut root = (self.root_fn)(self.state_context.clone());
 
         loop {
             match self.event_manager.next()? {

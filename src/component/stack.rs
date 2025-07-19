@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{component::{Component, ComponentEvent, Rect}, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent, Rect}, renderer::Renderer, state::StateContext};
 
 #[derive(Default)]
 pub enum Direction {
@@ -200,7 +200,7 @@ impl Component for StackComponent {
 }
 
 #[allow(non_snake_case)]
-pub fn Stack(props: StackProps) -> StackComponent {
+pub fn Stack(_ctx: StateContext, props: StackProps) -> StackComponent {
     StackComponent {
         bounds: Rect::default(),
         props

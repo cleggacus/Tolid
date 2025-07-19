@@ -1,6 +1,6 @@
 use crossterm::style::Stylize;
 
-use crate::{component::{Component, ComponentEvent, ComponentValue, Rect}, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent, ComponentValue, Rect}, renderer::Renderer, state::StateContext};
 
 pub struct TextComponent {
     bounds: Rect,
@@ -55,7 +55,7 @@ pub struct TextProps {
 }
 
 #[allow(non_snake_case)]
-pub fn Text(props: TextProps) -> TextComponent {
+pub fn Text(_ctx: StateContext, props: TextProps) -> TextComponent {
     TextComponent {
         bounds: Rect::default(),
         value: props.value,

@@ -58,8 +58,6 @@ impl Parse for Element {
         input.parse::<syn::token::Lt>()?;
         let name: syn::Ident = input.parse()?;
 
-        //attributes
-        
         let mut attrs: Vec<Attribute> = vec![];
 
         while input.peek(syn::Ident) {
@@ -79,8 +77,6 @@ impl Parse for Element {
         }
 
         input.parse::<syn::token::Gt>()?;
-
-        // chilren
 
         let mut children: Vec<Element> = vec![];
 
@@ -115,7 +111,6 @@ impl Element {
 
         let props_name = syn::Ident::new(&format!("{}Props", name), name.span());
 
-        // Generate tokens for attributes
         let mut fields: Vec<proc_macro2::TokenStream> = self.attrs.iter().map(|attr| {
             let key = &attr.name;
             match &attr.value {
@@ -127,7 +122,6 @@ impl Element {
                     }
                 },
                 AttributeValue::Expr(expr) => {
-                    // Only auto-wrap if component is Text and field is on_click
                     if (self.name == "Stack" || self.name == "Text") && key == "on_click" {
                         quote! { on_click: Some(Box::new(#expr)) }
                     } else if self.name == "Text" && key == "value" {
@@ -146,7 +140,6 @@ impl Element {
             }
         }).collect();
 
-        // Generate tokens for children
         let child_exprs = self.children.iter().map(|child| {
             let child_tokens = child.generate_tokens();
             quote! {
@@ -165,10 +158,13 @@ impl Element {
         }
 
         quote! {
-            #name(#props_name {
-                #(#fields,)*
-                ..Default::default()
-            })
+            #name(
+                ctx.clone(),
+                #props_name {
+                    #(#fields,)*
+                    ..Default::default()
+                }
+            )
         }
     }
 }
@@ -177,6 +173,10 @@ impl Element {
 pub fn ui(input: TokenStream) -> TokenStream {
     let parsed = syn::parse_macro_input!(input as Element);
     let output = parsed.generate_tokens();
+
+    let output_string = output.to_string();
+    eprintln!("Generated code:\n{}", output_string);
+
     TokenStream::from(output)
 }
 
@@ -191,8 +191,6 @@ pub fn component(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let vis = input_fn.vis.clone();
 
     let inputs = &input_fn.sig.inputs;
-
-    // Otherwise generate props struct and rewrite fn to take props param
 
     let props_struct_name = format_ident!("{}Props", fn_name);
 
@@ -224,7 +222,7 @@ pub fn component(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         #[allow(non_snake_case)]
-        #vis fn #fn_name(props: #props_struct_name) -> impl Component {
+        #vis fn #fn_name(ctx: StateContext, props: #props_struct_name) -> impl Component {
             let #props_struct_name { #(#param_idents),* } = props;
 
             #block
