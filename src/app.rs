@@ -22,7 +22,7 @@ struct App {
     root_fn: Box<dyn Fn() -> Box<dyn Component + 'static>>,
     renderer: Renderer,
     event_manager: EventManager,
-    state_context: StateContext,
+    _state_context: StateContext,
     stdout: Stdout,
 }
 
@@ -32,7 +32,7 @@ impl App {
             root_fn,
             renderer: Renderer::new(),
             event_manager: EventManager::new(Duration::from_millis(33)),
-            state_context: StateContext::new(),
+            _state_context: StateContext::new(),
             stdout: stdout()
         }
     }

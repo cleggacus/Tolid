@@ -23,7 +23,7 @@ fn Incrementer(set_counter: SetState<i64>) -> impl Component {
 }
 
 #[component]
-fn Root() -> impl Component {
+fn App() -> impl Component {
     let (counter, set_counter) = use_state::<i64>(0);
 
     ui! {
@@ -35,6 +35,6 @@ fn Root() -> impl Component {
 }
 
 fn main() {
-    run_app(Root);
+    run_app(App);
 }
 

@@ -199,6 +199,7 @@ impl Component for StackComponent {
     }
 }
 
+#[allow(non_snake_case)]
 pub fn Stack(props: StackProps) -> StackComponent {
     StackComponent {
         bounds: Rect::default(),

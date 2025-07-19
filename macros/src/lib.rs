@@ -177,7 +177,6 @@ impl Element {
 pub fn ui(input: TokenStream) -> TokenStream {
     let parsed = syn::parse_macro_input!(input as Element);
     let output = parsed.generate_tokens();
-    eprintln!("{}", output);
     TokenStream::from(output)
 }
 
@@ -224,6 +223,7 @@ pub fn component(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#props_fields),*
         }
 
+        #[allow(non_snake_case)]
         #vis fn #fn_name(props: #props_struct_name) -> impl Component {
             let #props_struct_name { #(#param_idents),* } = props;
 

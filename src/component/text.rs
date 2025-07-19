@@ -1,6 +1,6 @@
 use crossterm::style::Stylize;
 
-use crate::{component::{Component, ComponentEvent, ComponentValue, IntoComponentValue, Rect}, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent, ComponentValue, Rect}, renderer::Renderer};
 
 pub struct TextComponent {
     bounds: Rect,
@@ -54,6 +54,7 @@ pub struct TextProps {
     pub on_click: Option<Box<dyn FnMut(&mut TextComponent)>>,
 }
 
+#[allow(non_snake_case)]
 pub fn Text(props: TextProps) -> TextComponent {
     TextComponent {
         bounds: Rect::default(),
