@@ -5,7 +5,7 @@ use crate::{component::{Component, ComponentEvent, ComponentValue, Rect}, render
 pub struct TextComponent {
     bounds: Rect,
     value: ComponentValue<String>,
-    on_click: Option<Box<dyn FnMut(&mut TextComponent)>>,
+    on_click: Option<Box<dyn FnMut()>>,
 }
 
 impl Component for TextComponent {
@@ -40,7 +40,7 @@ impl Component for TextComponent {
                 }
 
                 if let Some(mut on_click) = self.on_click.take() {
-                    on_click(self);
+                    on_click();
                     self.on_click = Some(on_click);
                 }
             }
@@ -51,7 +51,7 @@ impl Component for TextComponent {
 #[derive(Default)]
 pub struct TextProps {
     pub value: ComponentValue<String>,
-    pub on_click: Option<Box<dyn FnMut(&mut TextComponent)>>,
+    pub on_click: Option<Box<dyn FnMut()>>,
 }
 
 #[allow(non_snake_case)]

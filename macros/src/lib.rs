@@ -116,7 +116,7 @@ impl Element {
             match &attr.value {
                 AttributeValue::Literal(lit) => {
                     if self.name == "Text" && key == "value" {
-                        quote! { value: tolid::component::ComponentValue::Static(#lit) }
+                        quote! { value: (#lit).into_component_value() }
                     } else {
                         quote! { #key: #lit }
                     }
@@ -125,14 +125,7 @@ impl Element {
                     if (self.name == "Stack" || self.name == "Text") && key == "on_click" {
                         quote! { on_click: Some(Box::new(#expr)) }
                     } else if self.name == "Text" && key == "value" {
-                        match expr {
-                            syn::Expr::Closure(_) => {
-                                quote! { value: tolid::component::ComponentValue::Dynamic(Box::new(#expr)) }
-                            }
-                            _ => {
-                                quote! { value: tolid::component::ComponentValue::Static(#expr) }
-                            }
-                        }
+                        quote! { value: (#expr).into_component_value() }
                     } else {
                         quote! { #key: (#expr) }
                     }
