@@ -10,12 +10,10 @@ fn App() -> impl Component {
 
     // Return component with markup!!!
     ui! {
-        <Center direction={Direction::Column} border={true}>
-            <Text padding={(1, 2, 1, 2)} value={value} />
+        <Center border={true}>
+            <Text value={value} />
 
             <Button
-                padding={(0, 1, 0, 1)}
-                width={StackWidth::Content} 
                 border={true}
                 on:click={increment}
                 value={"Increment".into()}
