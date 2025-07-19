@@ -1,6 +1,6 @@
 <h1 align="center">Tolid - React style framework for TUI's</h1>
 <p  align="center">
-  <img width="100%" src="https://i.imgur.com/Ha9Gu49.gif"/>
+  <img width="100%" src="https://i.imgur.com/8Pdj956.gif"/>
 </p>
 
 ## Counter Example
