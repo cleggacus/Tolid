@@ -1,5 +1,5 @@
 [package]
-name = "tolid-example-sandbox"
+name = "tolid-example-counter"
 version = "0.1.0"
 edition = "2024"
 
