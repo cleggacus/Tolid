@@ -2,21 +2,37 @@ use std::{io::{stdout, Stdout}, time::Duration};
 
 use crossterm::{cursor::{Hide, Show}, event::{DisableMouseCapture, EnableMouseCapture, KeyCode, KeyEvent, MouseEvent, MouseEventKind}, execute, terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen}};
 
-use crate::{component::{Component, ComponentEvent}, events::{Event, EventManager}, renderer::Renderer};
+use crate::{component::{Component, ComponentEvent}, events::{Event, EventManager}, renderer::Renderer, state::StateContext};
 
-pub struct App {
-    root: Box<dyn Component>,
+pub fn run_app<F, P, C>(f: F)
+where
+    F: Fn(P) -> C + 'static,
+    P: Default,
+    C: Component + 'static,
+{
+    let root_fn = Box::new(move || Box::new(f(Default::default())) as Box<dyn Component>);
+
+    App::new(root_fn)
+        .run()
+        .unwrap();
+}
+
+
+struct App {
+    root_fn: Box<dyn Fn() -> Box<dyn Component + 'static>>,
     renderer: Renderer,
     event_manager: EventManager,
+    state_context: StateContext,
     stdout: Stdout,
 }
 
 impl App {
-    pub fn new<T: Component + 'static>(root: T) -> Self {
+    pub fn new(root_fn: Box<dyn Fn() -> Box<dyn Component + 'static>>) -> Self {
         App {
-            root: Box::new(root),
+            root_fn,
             renderer: Renderer::new(),
             event_manager: EventManager::new(Duration::from_millis(33)),
+            state_context: StateContext::new(),
             stdout: stdout()
         }
     }
@@ -30,19 +46,19 @@ impl App {
         self.resize(width, height);
         execute!(self.stdout, Hide)?;
 
-        loop {
-            // let mut root = (self.root_fn)();
+        let mut root = (self.root_fn)();
 
+        loop {
             match self.event_manager.next()? {
                 Event::Key(key) => self.handle_key(key),
                 Event::Mouse(mouse) => self.handle_mouse(mouse),
                 Event::Tick => {},
                 Event::Resize(w, h) => self.resize(w, h),
-                Event::Component(component_event) => self.root.propagate_event(&component_event),
+                Event::Component(component_event) => root.propagate_event(&component_event),
                 Event::Quit => break,
             }
 
-            self.root.render(&mut self.renderer);
+            root.render(&mut self.renderer);
             self.renderer.render(&mut self.stdout)?;
         }
 

@@ -35,8 +35,6 @@ fn Root() -> impl Component {
 }
 
 fn main() {
-    App::new(Root(Default::default()))
-        .run()
-        .unwrap();
+    run_app(Root);
 }
 

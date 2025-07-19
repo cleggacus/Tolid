@@ -49,3 +49,15 @@ pub fn use_state<T>(initial: T) -> (GetState<T>, SetState<T>) {
     let rc = Rc::new(RefCell::new(initial));
     (GetState { inner: rc.clone() }, SetState { inner: rc })
 }
+
+
+
+
+pub struct StateContext {
+}
+
+impl StateContext {
+    pub fn new() -> Self {
+        StateContext {  }
+    }
+}
