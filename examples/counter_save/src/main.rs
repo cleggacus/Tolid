@@ -38,7 +38,6 @@ fn App() -> impl Component {
         <Center direction={Direction::Column} border={true}>
             <Button
                 padding={(0, 1, 0, 1)}
-                width={StackWidth::Content} 
                 border={true}
                 on:click={decrement}
                 value={"<<".into()}
@@ -48,7 +47,6 @@ fn App() -> impl Component {
 
             <Button
                 padding={(0, 1, 0, 1)}
-                width={StackWidth::Content} 
                 border={true}
                 on:click={increment}
                 value={">>".into()}
