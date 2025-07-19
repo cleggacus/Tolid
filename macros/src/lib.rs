@@ -14,11 +14,16 @@ struct Attribute {
 struct Element {
     name: syn::Ident,
     attrs: Vec<Attribute>,
-    children: Vec<Element>,
+    children: Children,
 }
 
 enum AttributeValue {
     Literal(syn::Lit),
+    Expr(syn::Expr),
+}
+
+enum Children {
+    ElementList(Vec<Element>),
     Expr(syn::Expr),
 }
 
@@ -72,18 +77,28 @@ impl Parse for Element {
             return Ok(Element { 
                 name, 
                 attrs, 
-                children: vec![]
+                children: Children::ElementList(vec![])
             });
         }
 
         input.parse::<syn::token::Gt>()?;
 
-        let mut children: Vec<Element> = vec![];
+        let children = if input.peek(syn::token::Brace) {
+            let content;
+            syn::braced!(content in input);
+            let expr = content.parse::<syn::Expr>()?;
 
-        while !(input.peek(syn::token::Lt) && input.peek2(syn::token::Slash)) {
-            let child: Element = input.parse()?;
-            children.push(child);
-        }
+            Children::Expr(expr)
+        } else {
+            let mut children: Vec<Element> = vec![];
+
+            while !(input.peek(syn::token::Lt) && input.peek2(syn::token::Slash)) {
+                let child: Element = input.parse()?;
+                children.push(child);
+            }
+
+            Children::ElementList(children)
+        };
 
         input.parse::<syn::token::Lt>()?;
         input.parse::<syn::token::Slash>()?;
@@ -133,21 +148,32 @@ impl Element {
             }
         }).collect();
 
-        let child_exprs = self.children.iter().map(|child| {
-            let child_tokens = child.generate_tokens();
-            quote! {
-                Box::new(#child_tokens)
-            }
-        });
+        match &self.children {
+            Children::ElementList(elements) => {
+                let child_exprs = elements.iter().map(|child| {
+                    let child_tokens = child.generate_tokens();
+                    quote! {
+                        Box::new(#child_tokens)
+                    }
+                });
 
-        if !self.children.is_empty() {
-            fields.push(
-                quote! {
-                    children: vec![
-                        #(#child_exprs),*
-                    ]
+                if !elements.is_empty() {
+                    fields.push(
+                        quote! {
+                            children: vec![
+                                #(#child_exprs),*
+                            ]
+                        }
+                    );
                 }
-            );
+            },
+            Children::Expr(expr) => {
+                fields.push(
+                    quote! {
+                        children: #expr
+                    }
+                );
+            },
         }
 
         quote! {
@@ -210,7 +236,7 @@ pub fn component(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let output = quote! {
         #[derive(Default)]
-        struct #props_struct_name {
+        #vis struct #props_struct_name {
             #(#props_fields),*
         }
 

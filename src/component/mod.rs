@@ -1,5 +1,7 @@
 pub mod stack;
 pub mod text;
+pub mod center;
+
 
 use crate::{renderer::Renderer};
 

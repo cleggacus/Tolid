@@ -10,14 +10,25 @@ fn App() -> impl Component {
 
     // Return component with markup!!!
     ui! {
-        <Stack border={true} widths={vec![StackWidth::Exact(1), StackWidth::Exact(1), StackWidth::Exact(1)]} >
-            <Text value={value} />
+        <Center border={true}>
+            <Stack>
+                <Stack width={StackWidth::Exact(1)} />
+                <Text value={value} />
+            </Stack>
 
-            <Text 
-                value={"Increment"}
+
+            <Stack 
+                direction={Direction::Column} 
+                width={StackWidth::Content} 
+                border={true}
                 on_click={increment}
-            />
-        </Stack>
+            >
+                <Text 
+                    width={StackWidth::Content}
+                    value={"Increment"}
+                />
+            </Stack>
+        </Center>
     }
 }
 

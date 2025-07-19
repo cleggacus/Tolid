@@ -1,11 +1,38 @@
 use crossterm::style::Stylize;
 
-use crate::{component::{Component, ComponentEvent, ComponentValue, Rect}, renderer::Renderer, state::StateContext};
+use crate::{component::{Component, ComponentEvent, ComponentValue, Rect}, prelude::{Direction, ResolvedStackWidth, StackComponent, StackWidth, StackWidthResolver}, renderer::Renderer, state::StateContext};
 
 pub struct TextComponent {
     bounds: Rect,
     value: ComponentValue<String>,
     on_click: Option<Box<dyn FnMut()>>,
+    width: StackWidth,
+}
+
+impl StackWidthResolver for TextComponent {
+    fn resolve_stack_width(&self, stack: &StackComponent) -> ResolvedStackWidth {
+        match self.width {
+            StackWidth::Content => {
+                let direction = stack.get_direction();
+
+                let val = match direction {
+                    Direction::Row => 1,
+                    Direction::Column => {
+                        let value = match &self.value {
+                            ComponentValue::Static(value) => value,
+                            ComponentValue::Dynamic(value_fn) => &value_fn(),
+                        };
+
+                        value.len()
+                    }
+                };
+
+                ResolvedStackWidth::Exact(val)
+            },
+            StackWidth::Flex(val) => ResolvedStackWidth::Flex(val),
+            StackWidth::Exact(val) => ResolvedStackWidth::Exact(val),
+        }
+    }
 }
 
 impl Component for TextComponent {
@@ -52,6 +79,7 @@ impl Component for TextComponent {
 pub struct TextProps {
     pub value: ComponentValue<String>,
     pub on_click: Option<Box<dyn FnMut()>>,
+    pub width: StackWidth,
 }
 
 #[allow(non_snake_case)]
@@ -59,6 +87,7 @@ pub fn Text(_ctx: StateContext, props: TextProps) -> TextComponent {
     TextComponent {
         bounds: Rect::default(),
         value: props.value,
-        on_click: props.on_click
+        on_click: props.on_click,
+        width: props.width,
     }
 }
