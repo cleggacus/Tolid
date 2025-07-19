@@ -40,6 +40,9 @@ fn main() {
 
 ```
 
+👉 [View Counter Example](./examples/counter/src/main.rs)
+
+
 ### Adding Decrement
 
 As we begin using state across multiple closures, we often need to `clone` it to satisfy ownership and borrowing rules.
@@ -137,3 +140,6 @@ fn App() -> impl Component {
     // ... rest of the code
 }
 ```
+
+👉 [View Counter Save Example](./examples/counter_save/src)
+
