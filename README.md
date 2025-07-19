@@ -23,21 +23,21 @@ fn App() -> impl Component {
 
     // Return component with markup!!!
     ui! {
-        <Stack border={true} widths={vec![StackWidth::Exact(1), StackWidth::Exact(1), StackWidth::Exact(1)]} >
+        <Center border={true}>
             <Text value={value} />
 
-            <Text 
-                value={"Increment"}
-                on_click={increment}
+            <Button
+                border={true}
+                on:click={increment}
+                value={"Increment".into()}
             />
-        </Stack>
+        </Center>
     }
 }
 
 fn main() {
     run_app(App);
 }
-
 ```
 
 👉 [View Counter Example](./examples/counter/src/main.rs)
@@ -61,13 +61,12 @@ let increment = {
 };
 ```
 
-Below is a full example using both increment and decrement functions:
+Below is a full example using both increment and decrement functions (some styling too :D):
 
 ```rust
 #[component]
 fn App() -> impl Component {
-    // Initialize counter state with custom save hook
-    let (counter, set_counter) = use_save(ctx.clone(), 0_i64);
+    let (counter, set_counter) = use_state(ctx.clone(), 0_i64);
 
     let increment = cm!(set_counter || set_counter.update(|counter| counter+1));
     let decrement = cm!(set_counter || set_counter.update(|counter| counter-1));
@@ -75,22 +74,25 @@ fn App() -> impl Component {
     let value = cm!(counter || format!("Counter: {}", counter.get()));
 
     ui! {
-        <Stack border={true} widths={vec![StackWidth::Exact(1), StackWidth::Exact(1), StackWidth::Exact(1)]} >
-            <Text value={value} />
-
-            <Text 
-                value={"Increment"}
-                on_click={increment}
+        <Center direction={Direction::Column} border={true}>
+            <Button
+                padding={(0, 1, 0, 1)}
+                border={true}
+                on:click={decrement}
+                value={"<<".into()}
             />
 
-            <Text 
-                value={"Decrement"}
-                on_click={decrement}
+            <Text padding={(1, 2, 1, 2)} value={value} />
+
+            <Button
+                padding={(0, 1, 0, 1)}
+                border={true}
+                on:click={increment}
+                value={">>".into()}
             />
-        </Stack>
+        </Center>
     }
 }
-
 ```
 
 
@@ -141,5 +143,5 @@ fn App() -> impl Component {
 }
 ```
 
-👉 [View Counter Save Example](./examples/counter_save/src)
+👉 [View Counter Save Example](./examples/counter_save/src/main.rs)
 
