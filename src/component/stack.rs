@@ -1,20 +1,12 @@
 use std::cmp::Ordering;
 
-use crate::{component::{Component, ComponentEvent, Rect}, renderer::Renderer, state::StateContext};
+use crate::{component::{Component, ComponentEvent, Rect}, prelude::Sides, renderer::Renderer, state::StateContext};
 
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     #[default] Row,
     Column
 }
-
-pub trait StackWidthResolver {
-    fn resolve_stack_width(&self, stack: &StackComponent) -> ResolvedStackWidth;
-}
-
-pub trait ComponentWithWidth: Component + StackWidthResolver {}
-
-impl<T: Component + StackWidthResolver> ComponentWithWidth for T {}
 
 #[derive(Default, Copy, Clone)]
 pub enum StackWidth {
@@ -45,52 +37,16 @@ enum WidthSegment {
 pub struct StackProps {
     pub border: bool,
     pub direction: Direction,
-    pub children: Vec<Box<dyn ComponentWithWidth>>,
+    pub children: Vec<Box<dyn Component>>,
     pub on_click: Option<Box<dyn FnMut()>>,
     pub width: StackWidth,
     pub align: StackAlign,
+    pub padding: Sides,
 }
 
 pub struct StackComponent {
     bounds: Rect,
     props: StackProps,
-}
-
-impl StackWidthResolver for StackComponent {
-    fn resolve_stack_width(&self, stack: &StackComponent) -> ResolvedStackWidth {
-        match self.props.width {
-            StackWidth::Content => {
-                let mut total_width = if self.props.border {
-                    2
-                } else {
-                    0
-                };
-
-
-                if self.get_direction() != stack.get_direction() {
-                    let mut max = 0;
-
-                    for child in &self.props.children {
-                        if let ResolvedStackWidth::Exact(val) = child.resolve_stack_width(stack) {
-                            max = max.max(val);
-                        }
-                    }
-
-                    total_width += max;
-                } else {
-                    for child in &self.props.children {
-                        if let ResolvedStackWidth::Exact(val) = child.resolve_stack_width(stack) {
-                            total_width += val;
-                        }
-                    }
-                }
-
-                ResolvedStackWidth::Exact(total_width)
-            },
-            StackWidth::Flex(val) => ResolvedStackWidth::Flex(val),
-            StackWidth::Exact(val) => ResolvedStackWidth::Exact(val),
-        }
-    }
 }
 
 impl StackComponent {
@@ -135,7 +91,7 @@ impl StackComponent {
         let mut flex_remainders = Vec::<(f32, usize)>::new();
         let mut total_width: usize = 0;
 
-        let mut children: Vec<Option<&Box<dyn ComponentWithWidth>>> = vec![];
+        let mut children: Vec<Option<&Box<dyn Component>>> = vec![];
 
         let has_flex_children = flex_count > 0;
 
@@ -269,20 +225,23 @@ impl Component for StackComponent {
             return;
         }
 
-        if self.props.border {
-            if width < 2 && height < 2 {
-                return;
-            }
-
+        let (mut x, mut y, mut width, mut height) = if self.props.border {
             renderer.draw_box(0, 0, width, height);
-            renderer.push_relative_render_context(1, 1, width - 2.min(width), height - 2.min(height));
-        }
+            (1, 1, width - 2.min(width), height - 2.min(height))
+        } else {
+            (0, 0, width, height)
+        };
+
+        x += self.props.padding.3;
+        y += self.props.padding.0;
+        width -= (self.props.padding.3 + self.props.padding.1).min(width);
+        height -= (self.props.padding.0 + self.props.padding.2).min(width);
+
+        renderer.push_relative_render_context(x, y, width, height);
 
         self.render_children(renderer);
 
-        if self.props.border {
-            renderer.pop_render_context();
-        }
+        renderer.pop_render_context();
     }
 
     fn propagate_event(&mut self, event: &ComponentEvent) {
@@ -304,6 +263,45 @@ impl Component for StackComponent {
 
         for child in &mut self.props.children {
             child.propagate_event(event);
+        }
+    }
+
+    fn resolve_stack_width(&self, stack: &StackComponent) -> ResolvedStackWidth {
+        match self.props.width {
+            StackWidth::Content => {
+                let mut total_width = if self.props.border {
+                    2
+                } else {
+                    0
+                };
+
+                total_width += match stack.get_direction() {
+                    Direction::Row => self.props.padding.0 + self.props.padding.2,
+                    Direction::Column => self.props.padding.1 + self.props.padding.3,
+                };
+
+                if self.get_direction() != stack.get_direction() {
+                    let mut max = 0;
+
+                    for child in &self.props.children {
+                        if let ResolvedStackWidth::Exact(val) = child.resolve_stack_width(stack) {
+                            max = max.max(val);
+                        }
+                    }
+
+                    total_width += max;
+                } else {
+                    for child in &self.props.children {
+                        if let ResolvedStackWidth::Exact(val) = child.resolve_stack_width(stack) {
+                            total_width += val;
+                        }
+                    }
+                }
+
+                ResolvedStackWidth::Exact(total_width)
+            },
+            StackWidth::Flex(val) => ResolvedStackWidth::Flex(val),
+            StackWidth::Exact(val) => ResolvedStackWidth::Exact(val),
         }
     }
 }

@@ -7,6 +7,7 @@ use syn::{
 };
 
 struct Attribute {
+    prefix: Option<syn::Ident>,
     name: syn::Ident,
     value: AttributeValue,
 }
@@ -45,12 +46,25 @@ impl Parse for AttributeValue {
 
 impl Parse for Attribute {
     fn parse(input: ParseStream) -> Result<Self> {
-        let name = input.parse::<syn::Ident>()?;
+        let mut name = input.parse::<syn::Ident>()?;
+
+        let prefix = if input.peek(syn::token::Colon) {
+            let prefix = name;
+
+            input.parse::<syn::token::Colon>()?;
+            name = input.parse::<syn::Ident>()?;
+
+            Some(prefix)
+        } else {
+            None
+        };
+
         input.parse::<syn::token::Eq>()?;
 
         let value: AttributeValue = input.parse()?;
 
         Ok(Attribute {
+            prefix,
             name,
             value,
         })
@@ -128,6 +142,8 @@ impl Element {
 
         let mut fields: Vec<proc_macro2::TokenStream> = self.attrs.iter().map(|attr| {
             let key = &attr.name;
+            let prefix = &attr.prefix;
+
             match &attr.value {
                 AttributeValue::Literal(lit) => {
                     if self.name == "Text" && key == "value" {
@@ -137,9 +153,14 @@ impl Element {
                     }
                 },
                 AttributeValue::Expr(expr) => {
-                    if (self.name == "Stack" || self.name == "Text") && key == "on_click" {
-                        quote! { on_click: Some(Box::new(#expr)) }
-                    } else if self.name == "Text" && key == "value" {
+                    if let Some(prefix) = prefix {
+                        if prefix == "on" {
+                            let combined = format_ident!("{}_{}", prefix, key);
+                            return quote! { #combined: Some(Box::new(#expr)) };
+                        }
+                    }
+
+                    if self.name == "Text" && key == "value" {
                         quote! { value: (#expr).into_component_value() }
                     } else {
                         quote! { #key: (#expr) }

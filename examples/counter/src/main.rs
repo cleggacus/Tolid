@@ -10,24 +10,16 @@ fn App() -> impl Component {
 
     // Return component with markup!!!
     ui! {
-        <Center border={true}>
-            <Stack>
-                <Stack width={StackWidth::Exact(1)} />
-                <Text value={value} />
-            </Stack>
+        <Center direction={Direction::Column} border={true}>
+            <Text padding={(1, 2, 1, 2)} value={value} />
 
-
-            <Stack 
-                direction={Direction::Column} 
+            <Button
+                padding={(0, 1, 0, 1)}
                 width={StackWidth::Content} 
                 border={true}
-                on_click={increment}
-            >
-                <Text 
-                    width={StackWidth::Content}
-                    value={"Increment"}
-                />
-            </Stack>
+                on:click={increment}
+                value={"Increment".into()}
+            />
         </Center>
     }
 }

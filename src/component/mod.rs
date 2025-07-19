@@ -1,9 +1,10 @@
 pub mod stack;
 pub mod text;
 pub mod center;
+pub mod button;
 
 
-use crate::{renderer::Renderer};
+use crate::{prelude::{ResolvedStackWidth, StackComponent}, renderer::Renderer};
 
 pub struct Rect {
     pub x: usize,
@@ -23,9 +24,12 @@ impl Default for Rect {
     }
 }
 
+pub type Sides = (usize, usize, usize, usize);
+
 pub trait Component {
     fn propagate_event(&mut self, event: &ComponentEvent);
     fn render(&mut self, renderer: &mut Renderer);
+    fn resolve_stack_width(&self, stack: &StackComponent) -> ResolvedStackWidth;
 }
 
 #[derive(Debug, Clone)]
